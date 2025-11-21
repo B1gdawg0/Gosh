@@ -1,0 +1,7 @@
+import fmt;
+
+int a = 10;
+int b = 5;
+
+:: var c int = 3
+:: fmt.Println(a+b+c)
