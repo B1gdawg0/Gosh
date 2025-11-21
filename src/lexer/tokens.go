@@ -4,6 +4,7 @@ type TokenType string;
 
 const (
 	TYPE_INT TokenType = "TYPE_INT"
+	TYPE_STRING TokenType = "TYPE_STRING"
 
 	INT TokenType = "INT"
 	IDENT TokenType = "IDENT"
@@ -21,6 +22,7 @@ const (
 	RBRACE TokenType = "}"
 	COMMA  TokenType = ","
 	SEMI   TokenType = ";"
+	DoubleQ TokenType = "\""
 
 	EOF     TokenType = "EOF"
 	ILLEGAL TokenType = "ILLEGAL"
@@ -37,6 +39,7 @@ type Token struct{
 var keywords = map[string]TokenType{
 	"int": TYPE_INT,
 	"import": IMPORT,
+	"string": TYPE_STRING,
 }
 
 func LookupIdent(ident string) TokenType {

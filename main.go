@@ -95,11 +95,11 @@ func transpile(in string) string{
 
 		switch tok.Type {
 			case lx.TYPE_INT:
-				left := lexer.Tokenize()
-				lexer.Tokenize()
-				right := lexer.Tokenize()
-				lexer.Tokenize()
+				left, right := lx.GetLeftRightFromDefined(lexer)
 				out.WriteString(fmt.Sprintf("\tvar %s int = %s\n", left.Literal, right.Literal)) 
+			case lx.TYPE_STRING:
+				left, right := lx.GetLeftRightFromDefined(lexer)
+				out.WriteString(fmt.Sprintf("\tvar %s string = \"%s\"\n", left.Literal, right.Literal)) 
 			case lx.NATIVE:
 				out.WriteString("\t" + strings.TrimSpace(tok.Literal) + "\n")
 		}

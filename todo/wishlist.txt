@@ -1,3 +1,5 @@
+Primary Type: string, bool, float, double, long, bigint, byte, bit
+Array
 Class
 Interface
 Abstract

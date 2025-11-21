@@ -1,0 +1,5 @@
+import fmt;
+
+string a = 50;
+
+:: fmt.Println(a)

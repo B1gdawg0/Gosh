@@ -1,5 +1,10 @@
 package lexer
 
+import (
+	"fmt"
+	"os"
+)
+
 type Lexer struct {
 	input   string
 	pos     int
@@ -32,6 +37,12 @@ func (lx *Lexer) Tokenize() Token {
 		tok = Token{Type: ASSIGN, Literal: string(lx.ch), Line: lx.line}
 	case ';':
 		tok = Token{Type: SEMI, Literal: string(lx.ch), Line: lx.line}
+	case '"':
+		if isLetter(lx.ch){
+			tok.Literal = lx.readContentInsideDoubleQuote()
+			tok.Type = STRING
+			return tok
+		}
 	case ':':
 		if lx.checkRightChar() == ':' {
         lx.moveCursorToRight()
@@ -89,6 +100,18 @@ func (lx *Lexer) skipWhiteSpace() {
 		}
 		lx.moveCursorToRight()
 	}
+}
+
+func (lx *Lexer) readContentInsideDoubleQuote() string{
+	first_i := lx.pos;
+	if lx.ch != '"'{
+		fmt.Println("[Error] invalid string format at line: ", lx.line)
+		os.Exit(1)
+	}
+	for lx.ch != '"'&&(isLetter(lx.ch) || isDigit(lx.ch)){
+		lx.moveCursorToRight();
+	}
+	return lx.input[first_i:lx.pos]
 }
 
 func (lx *Lexer) readIdentifier() string{
