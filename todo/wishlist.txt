@@ -1,0 +1,11 @@
+Class
+Interface
+Abstract
+Try-catch
+Exception
+Enums
+Injection
+*Event-driven-design* (IBig)
+Shared among folder
+Public Private 
+Const Dynamic
