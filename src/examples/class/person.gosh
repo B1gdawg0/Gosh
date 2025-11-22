@@ -1,0 +1,13 @@
+class Person {
+    string name;
+    int age;
+
+    void Person(string name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+	void greet() {
+		:: fmt.Println("Hello, my name is", this.name, "and I'm", this.age, "years old");
+	}
+}

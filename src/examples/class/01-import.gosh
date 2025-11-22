@@ -1,0 +1,26 @@
+import person;
+native_import fmt;
+native_import strconv;
+
+class Car {
+    string brand;
+    string model;
+    int year;
+    int price;
+	Person owner;
+
+	void Car(string brand, string model, int year, int price, Person owner) {
+		this.brand = brand;
+		this.model = model;
+		this.year = year;
+		this.price = price;
+		this.owner = owner;
+	}
+
+	void ownerInfo() {
+		:: fmt.Println("Owner: " + this.owner.name + " " + strconv.Itoa(this.owner.age));
+	}
+}
+
+Car myCar = new Car("Ford", "Mustang", 2021, 100000, new Person("John Doe", 30 * 3 + 1));
+myCar.ownerInfo();

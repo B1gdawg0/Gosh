@@ -1,0 +1,30 @@
+native_import net/http;
+native_import fmt;
+
+class WebServer {
+	http.Server server;
+
+	void WebServer(int port) {
+		:: this.server = http.Server{
+		:: 	Addr: fmt.Sprintf(":%d", port),
+		:: }
+	}
+
+	void registerRoutes(string path, http.HandlerFunc handler) {
+		:: http.HandleFunc(path, handler)
+	}
+
+	void start() {
+		this.registerRoutes("/", func(w http.ResponseWriter, r *http.Request) {
+			:: fmt.Fprintf(w, "200 welcome to Go Sharp!")
+		});
+		this.registerRoutes("/api/v1/hello", func(w http.ResponseWriter, r *http.Request) {
+			:: fmt.Fprintf(w, "Hello, World!")
+		});
+		:: fmt.Println("Server starting on", this.server.Addr)
+		:: http.ListenAndServe(this.server.Addr, nil)
+	}
+}
+
+WebServer server = new WebServer(8080);
+server.start();

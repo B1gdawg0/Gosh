@@ -1,0 +1,5 @@
+import song;
+native_import fmt;
+
+Song song = new Song("Song 1", "Artist 1", 480);
+song.play();

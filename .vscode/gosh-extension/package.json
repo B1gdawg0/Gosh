@@ -1,0 +1,28 @@
+{
+  "name": "gosh-language",
+  "displayName": "Gosh Language Support",
+  "description": "Syntax highlighting for Gosh language",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.0.0"
+  },
+  "categories": ["Programming Languages"],
+  "contributes": {
+    "languages": [
+      {
+        "id": "gosh",
+        "aliases": ["Gosh", "gosh"],
+        "extensions": [".gosh"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "gosh",
+        "scopeName": "source.gosh",
+        "path": "./syntaxes/gosh.tmLanguage.json"
+      }
+    ]
+  }
+}
+

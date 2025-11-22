@@ -22,12 +22,12 @@ func NewLexer(input string) *Lexer {
 }
 
 func (lx *Lexer) Tokenize() Token {
-	if lx.lastToken != nil{
+	if lx.lastToken != nil {
 		t := *lx.lastToken
 		lx.lastToken = nil
 		return t
 	}
-	
+
 	var tok Token
 	lx.skipWhiteSpace()
 	tok.Line = lx.line
@@ -49,23 +49,35 @@ func (lx *Lexer) Tokenize() Token {
 		tok = Token{Type: MULT, Literal: string(lx.ch), Line: lx.line}
 	case '/':
 		tok = Token{Type: DIV, Literal: string(lx.ch), Line: lx.line}
+	case '.':
+		tok = Token{Type: DOT, Literal: string(lx.ch), Line: lx.line}
+	case ',':
+		tok = Token{Type: COMMA, Literal: string(lx.ch), Line: lx.line}
+	case '{':
+		tok = Token{Type: LBRACE, Literal: string(lx.ch), Line: lx.line}
+	case '}':
+		tok = Token{Type: RBRACE, Literal: string(lx.ch), Line: lx.line}
+	case '[':
+		tok = Token{Type: LBRACKET, Literal: string(lx.ch), Line: lx.line}
+	case ']':
+		tok = Token{Type: RBRACKET, Literal: string(lx.ch), Line: lx.line}
 	case '"':
 		tok.Literal = lx.readContentInsideDoubleQuote()
 		tok.Type = STRING
 		return tok
 	case ':':
 		if lx.checkRightChar() == ':' {
-        lx.moveCursorToRight()
-        lx.moveCursorToRight()
+			lx.moveCursorToRight()
+			lx.moveCursorToRight()
 
-        start := lx.pos
-        for lx.ch != 0 && lx.ch != '\n' && lx.ch != ';' {
-            lx.moveCursorToRight()
-        }
-        literal := lx.input[start:lx.pos]
-        tok = Token{Type: NATIVE, Literal: literal, Line: lx.line}
-        return tok
-    }
+			start := lx.pos
+			for lx.ch != 0 && lx.ch != '\n' && lx.ch != ';' {
+				lx.moveCursorToRight()
+			}
+			literal := lx.input[start:lx.pos]
+			tok = Token{Type: NATIVE, Literal: literal, Line: lx.line}
+			return tok
+		}
 	case 0:
 		tok.Literal = ""
 		tok.Type = EOF
@@ -86,35 +98,35 @@ func (lx *Lexer) Tokenize() Token {
 	return tok
 }
 
-func (lx *Lexer) moveCursorToRight(){
-	if(lx.readPos >= len(lx.input)){
+func (lx *Lexer) moveCursorToRight() {
+	if lx.readPos >= len(lx.input) {
 		lx.ch = 0
-	}else{
+	} else {
 		lx.ch = lx.input[lx.readPos]
 	}
 	lx.pos = lx.readPos
 	lx.readPos++
 }
 
-func (lx *Lexer) checkRightChar() byte{
-	if(lx.readPos >= len(lx.input)){
+func (lx *Lexer) checkRightChar() byte {
+	if lx.readPos >= len(lx.input) {
 		return 0
 	}
-	return  lx.input[lx.readPos]
+	return lx.input[lx.readPos]
 }
 
 func (lx *Lexer) skipWhiteSpace() {
-	for lx.ch == ' ' || lx.ch == '\t' || lx.ch == '\n' || lx.ch == '\r'{
-		if(lx.ch == '\n'){
+	for lx.ch == ' ' || lx.ch == '\t' || lx.ch == '\n' || lx.ch == '\r' {
+		if lx.ch == '\n' {
 			lx.line++
 		}
 		lx.moveCursorToRight()
 	}
 }
 
-func (lx *Lexer) readContentInsideDoubleQuote() string{
-	first_i := lx.pos+1;
-	if lx.ch != '"'{
+func (lx *Lexer) readContentInsideDoubleQuote() string {
+	first_i := lx.pos + 1
+	if lx.ch != '"' {
 		fmt.Println("[Error] invalid string format at line: ", lx.line)
 		os.Exit(1)
 	}
@@ -123,23 +135,23 @@ func (lx *Lexer) readContentInsideDoubleQuote() string{
 		lx.moveCursorToRight()
 	}
 	lx.moveCursorToRight()
-	return lx.input[first_i:lx.pos-1]
+	return lx.input[first_i : lx.pos-1]
 }
 
-func (lx *Lexer) readIdentifier() string{
-	first_i := lx.pos;
-	for isLetter(lx.ch) || isDigit(lx.ch){
-		lx.moveCursorToRight();
+func (lx *Lexer) readIdentifier() string {
+	first_i := lx.pos
+	for isLetter(lx.ch) || isDigit(lx.ch) {
+		lx.moveCursorToRight()
 	}
 	return lx.input[first_i:lx.pos]
 }
 
-func (lx *Lexer) readNumber() string{
+func (lx *Lexer) readNumber() string {
 	first_n := lx.pos
-	for isDigit(lx.ch){
-		lx.moveCursorToRight();
+	for isDigit(lx.ch) {
+		lx.moveCursorToRight()
 	}
-	return  lx.input[first_n: lx.pos];
+	return lx.input[first_n:lx.pos]
 }
 
 func isDigit(ch byte) bool {
@@ -150,6 +162,6 @@ func isLetter(ch byte) bool {
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
 }
 
-func (lx *Lexer) CheckPointThis(tok Token){
+func (lx *Lexer) CheckPointThis(tok Token) {
 	lx.lastToken = &tok
 }

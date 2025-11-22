@@ -1,0 +1,15 @@
+class Song {
+    string title;
+    string artist;
+    int duration;
+
+    void Song(string title, string artist, int duration) {
+        this.title = title;
+        this.artist = artist;
+        this.duration = duration;
+    }
+
+	void play() {
+		:: fmt.Println("Playing " + this.title + " by " + this.artist);
+	}
+}

@@ -1,0 +1,26 @@
+import song;
+native_import fmt;
+
+class Playlist {
+	string name;
+	Song[] songs;
+
+	void Playlist(string name) {
+		this.name = name;
+		this.songs = [new Song("Bohemian Rhapsody", "Queen", 354), new Song("Hotel California", "Eagles", 390)];
+	}
+
+	void addSong(Song song) {
+		this.songs = append(this.songs, song);
+	}
+
+	void addSongByDetails(string title, string artist, int duration) {
+		this.songs = append(this.songs, new Song(title, artist, duration));
+	}
+
+	void play() {
+		:: for _, song := range this.songs {
+		:: 	song.play()
+		:: }
+	}
+}

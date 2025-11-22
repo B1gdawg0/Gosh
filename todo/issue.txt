@@ -1,0 +1,2 @@
+Import and Native_Import cannot be nested import.
+No handle on circular depedencies calling.
