@@ -1,12 +1,5 @@
 native_import fmt;
 
-int a = 10;
-int b = 5;
-int c = (10 * (a + b * 10));
-string lovelygreettomydearfriend = "Kuy I here big";
-bool truesy = true;
+int c = 10;
 
-:: if (truesy){
-:: fmt.Println("result: ", c)
-:: fmt.Println(lovelygreettomydearfriend)
-::}
+fmt.Println("result: ", c)

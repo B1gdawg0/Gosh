@@ -363,43 +363,38 @@ func TranspileExpr(e Expr) string {
 		)
 
 	case *NewExpr:
-		if len(v.Args) > 0 {
-			class, ok := classRegistry[v.ClassName]
-			if !ok {
-				panic(fmt.Sprintf("[Error] Unknown class: %s", v.ClassName))
-			}
+		class, ok := classRegistry[v.ClassName]
+		if !ok {
+			panic(fmt.Sprintf("[Error] Unknown class: %s", v.ClassName))
+		}
 
-			hasConstructor := false
-			for _, method := range class.Methods {
-				if method.Name == v.ClassName {
-					hasConstructor = true
-					if len(v.Args) != len(method.Params) {
-						panic(fmt.Sprintf("[Error] Constructor for %s expects %d arguments, got %d", v.ClassName, len(method.Params), len(v.Args)))
-					}
-					args := ""
-					for i, arg := range v.Args {
-						if i > 0 {
-							args += ", "
-						}
-						args += TranspileExpr(arg)
-					}
-					return fmt.Sprintf("func() *%s { obj := &%s{}; obj.%s(%s); return obj }()", v.ClassName, v.ClassName, v.ClassName, args)
-				}
-			}
-
-			if !hasConstructor {
-				if len(v.Args) != len(class.Fields) {
-					panic(fmt.Sprintf("[Error] Constructor for %s expects %d arguments, got %d", v.ClassName, len(class.Fields), len(v.Args)))
-				}
-				fields := ""
+		// Check for a constructor method with matching parameter count
+		for _, method := range class.Methods {
+			if method.Name == v.ClassName && len(method.Params) == len(v.Args) {
+				args := ""
 				for i, arg := range v.Args {
 					if i > 0 {
-						fields += ", "
+						args += ", "
 					}
-					fields += fmt.Sprintf("%s: %s", class.Fields[i].Name, TranspileExpr(arg))
+					args += TranspileExpr(arg)
 				}
-				return fmt.Sprintf("&%s{%s}", v.ClassName, fields)
+				return fmt.Sprintf("func() *%s { obj := &%s{}; obj.%s(%s); return obj }()", v.ClassName, v.ClassName, v.ClassName, args)
 			}
+		}
+
+		// If no constructor found, use field initialization or empty struct
+		if len(v.Args) > 0 {
+			if len(v.Args) != len(class.Fields) {
+				panic(fmt.Sprintf("[Error] Constructor for %s expects %d arguments, got %d", v.ClassName, len(class.Fields), len(v.Args)))
+			}
+			fields := ""
+			for i, arg := range v.Args {
+				if i > 0 {
+					fields += ", "
+				}
+				fields += fmt.Sprintf("%s: %s", class.Fields[i].Name, TranspileExpr(arg))
+			}
+			return fmt.Sprintf("&%s{%s}", v.ClassName, fields)
 		}
 		return fmt.Sprintf("&%s{}", v.ClassName)
 	case *MemberAccessExpr:
