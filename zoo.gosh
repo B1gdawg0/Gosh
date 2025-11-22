@@ -1,0 +1,36 @@
+native_import fmt;
+
+class Section{
+    string animal;
+    string section_id;
+
+    void Section(string animal, string section_id){
+        this.animal = animal;
+        this.section_id = section_id;
+    }
+}
+
+class Zoo{
+    string name;
+    Section[] sections;
+
+    void Zoo(string name, Section[] sections){
+        this.name = name;
+        this.sections = sections;
+    }
+
+	void addSection(Section section){
+		this.sections = append(this.sections, section);
+	}
+
+    void announce(){
+::         for _, sec := range this.sections {
+             fmt.Println("we have: ", sec.animal, " age: ",sec.section_id);
+::         }
+    }
+}
+
+Section section01 = new Section("lion", "001");
+Section section02 = new Section("seal", "002");
+Zoo kasetsart = new Zoo("Dumb dumb", [section01, section02]);
+kasetsart.announce();

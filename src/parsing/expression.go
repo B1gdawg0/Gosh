@@ -339,6 +339,10 @@ func SetClassRegistry(classes map[string]*ClassDecl) {
 }
 
 func TranspileExpr(e Expr) string {
+	return TranspileExprWithType(e, "")
+}
+
+func TranspileExprWithType(e Expr, expectedType string) string {
 	switch v := e.(type) {
 	case *NumericExpr:
 		return v.Raw
@@ -376,7 +380,28 @@ func TranspileExpr(e Expr) string {
 					if i > 0 {
 						args += ", "
 					}
-					args += TranspileExpr(arg)
+					// Get expected type from parameter
+					var argExpectedType string
+					if i < len(method.Params) {
+						param := method.Params[i]
+						if param.Type == lx.IDENT && param.TypeName != "" {
+							if strings.HasPrefix(param.TypeName, "[]") {
+								baseType := strings.TrimPrefix(param.TypeName, "[]")
+								if strings.Contains(baseType, ".") || strings.HasPrefix(baseType, "*") {
+									argExpectedType = "[]" + baseType
+								} else {
+									argExpectedType = "[]*" + baseType
+								}
+							} else {
+								if strings.Contains(param.TypeName, ".") || strings.HasPrefix(param.TypeName, "*") {
+									argExpectedType = param.TypeName
+								} else {
+									argExpectedType = "*" + param.TypeName
+								}
+							}
+						}
+					}
+					args += TranspileExprWithType(arg, argExpectedType)
 				}
 				return fmt.Sprintf("func() *%s { obj := &%s{}; obj.%s(%s); return obj }()", v.ClassName, v.ClassName, v.ClassName, args)
 			}
@@ -392,7 +417,28 @@ func TranspileExpr(e Expr) string {
 				if i > 0 {
 					fields += ", "
 				}
-				fields += fmt.Sprintf("%s: %s", class.Fields[i].Name, TranspileExpr(arg))
+				// Get expected type from field
+				var argExpectedType string
+				if i < len(class.Fields) {
+					field := class.Fields[i]
+					if field.Type == lx.IDENT && field.TypeName != "" {
+						if strings.HasPrefix(field.TypeName, "[]") {
+							baseType := strings.TrimPrefix(field.TypeName, "[]")
+							if strings.Contains(baseType, ".") || strings.HasPrefix(baseType, "*") {
+								argExpectedType = "[]" + baseType
+							} else {
+								argExpectedType = "[]*" + baseType
+							}
+						} else {
+							if strings.Contains(field.TypeName, ".") || strings.HasPrefix(field.TypeName, "*") {
+								argExpectedType = field.TypeName
+							} else {
+								argExpectedType = "*" + field.TypeName
+							}
+						}
+					}
+				}
+				fields += fmt.Sprintf("%s: %s", class.Fields[i].Name, TranspileExprWithType(arg, argExpectedType))
 			}
 			return fmt.Sprintf("&%s{%s}", v.ClassName, fields)
 		}
@@ -416,6 +462,11 @@ func TranspileExpr(e Expr) string {
 			}
 			elements += TranspileExpr(elem)
 		}
+		// Use expected type if provided (from constructor parameter or field type)
+		if expectedType != "" && strings.HasPrefix(expectedType, "[]") {
+			return fmt.Sprintf("%s{%s}", expectedType, elements)
+		}
+		// Otherwise, try to infer from elements
 		if len(v.Elements) > 0 {
 			if newExpr, ok := v.Elements[0].(*NewExpr); ok {
 				return fmt.Sprintf("[]*%s{%s}", newExpr.ClassName, elements)
