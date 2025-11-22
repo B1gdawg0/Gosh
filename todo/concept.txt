@@ -1,1 +1,3 @@
-backend by default
+Fastest OOP ever
+Portable to Go. Switch these two seamlessly
+Backend friendly
