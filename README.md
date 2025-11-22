@@ -22,11 +22,7 @@ So I built Gosh for the love of the game. Life's too short to choose between per
 
 **Gosh is the "yes, and" to Go's "no, but"**
 
-Write OOP-style code that transpiles to pure Go. You get modern syntax with Go's legendary performance baked in. And, This might be the **fastest OOP language ever** right? Because under the hood, it's just Go. We're not interpreting. We're not adding runtime overhead. We're transpiling to native Go code and letting the Go compiler do its magic.
-
-**Big Omega(Go performance)** - that's your floor, not your ceiling.
-
-Java? Slower. C#? Slower. TypeScript? Don't even start. They're all battling JIT compilers and runtime VMs. Gosh just... becomes Go. That's it. That's the trick.
+Write OOP-style code that transpiles to pure Go. You get modern syntax with Go's legendary performance baked in. And, This might be the **fastest OOP language ever** right? Because under the hood, it's just Go. We're not interpreting. We're not adding runtime overhead. We're transpiling to native Go code and letting the Go compiler do its magic. Java? Slower. C#? Slower. TypeScript? Don't even start. They're all battling JIT compilers and runtime VMs. Gosh just... becomes Go. That's it. That's the trick.
 
 ---
 
