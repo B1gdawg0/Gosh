@@ -3,6 +3,7 @@ package lexer
 import (
 	"fmt"
 	"os"
+	"strconv"
 )
 
 type Lexer struct {
@@ -75,8 +76,9 @@ func (lx *Lexer) Tokenize() Token {
 			tok.Type = LookupIdent(tok.Literal)
 			return tok
 		} else if isDigit(lx.ch) {
-			tok.Type = INT
-			tok.Literal = lx.readNumber()
+			literal := lx.readNumeric()
+			tok.Type = DetectNumberType(literal)
+			tok.Literal = literal
 			return tok
 		} else {
 			tok = Token{Type: ILLEGAL, Literal: string(lx.ch), Line: lx.line}
@@ -134,13 +136,47 @@ func (lx *Lexer) readIdentifier() string{
 	return lx.input[first_i:lx.pos]
 }
 
-func (lx *Lexer) readNumber() string{
-	first_n := lx.pos
-	for isDigit(lx.ch){
-		lx.moveCursorToRight();
-	}
-	return  lx.input[first_n: lx.pos];
+func (lx *Lexer) readNumeric() string {
+    start := lx.pos
+
+    hasDot := false
+    hasExp := false
+
+    for {
+        ch := lx.ch
+
+        if isDigit(ch) {
+            lx.moveCursorToRight()
+            continue
+        }
+
+        if ch == '.' && !hasDot && !hasExp {
+            hasDot = true
+            lx.moveCursorToRight()
+            continue
+        }
+
+        if (ch == 'e' || ch == 'E') && !hasExp {
+            hasExp = true
+            lx.moveCursorToRight()
+
+            if lx.ch == '+' || lx.ch == '-' {
+                lx.moveCursorToRight()
+            }
+            continue
+        }
+
+        if ch == 'L' || ch == 'l' || ch == 'F' || ch == 'f' || ch == 'D' || ch == 'd' {
+            lx.moveCursorToRight()
+            break
+        }
+
+        break
+    }
+
+    return lx.input[start:lx.pos]
 }
+
 
 func isDigit(ch byte) bool {
 	return '0' <= ch && ch <= '9'
@@ -152,4 +188,92 @@ func isLetter(ch byte) bool {
 
 func (lx *Lexer) CheckPointThis(tok Token){
 	lx.lastToken = &tok
+}
+
+func DetectNumberType(lit string) TokenType {
+    if len(lit) == 0 {
+        return ILLEGAL
+    }
+
+    // check suffix
+    last := lit[len(lit)-1]
+    hasLongSuffix := last == 'L' || last == 'l'
+    hasFloatSuffix := last == 'F' || last == 'f'
+    hasDoubleSuffix := last == 'D' || last == 'd'
+
+    // remove suffix
+    num := lit
+    if hasLongSuffix || hasFloatSuffix || hasDoubleSuffix {
+        num = lit[:len(lit)-1]
+    }
+
+    hasDot := false
+    hasExp := false
+    expIndex := -1
+
+    for i := 0; i < len(num); i++ {
+        c := num[i]
+
+        switch {
+        case c >= '0' && c <= '9':
+            continue
+		
+        case c == '.':
+            if hasDot || hasExp {
+				// why u want many dot fam?
+                return ILLEGAL
+            }
+            hasDot = true
+
+        case c == 'e' || c == 'E':
+            if hasExp || i == 0 { 
+				// why u need many e also fam?
+                return ILLEGAL
+            }
+            hasExp = true
+            expIndex = i
+
+            if i+1 >= len(num) {
+                return ILLEGAL
+            }
+            if num[i+1] == '+' || num[i+1] == '-' {
+                if i+2 >= len(num) {
+                    return ILLEGAL
+                }
+            }
+
+        case c == '+' || c == '-':
+            if i != expIndex+1 {
+                return ILLEGAL
+            }
+
+        default:
+            return ILLEGAL
+        }
+    }
+
+    if hasFloatSuffix {
+        return FLOAT
+    }
+    if hasDoubleSuffix {
+        return DOUBLE
+    }
+    if hasLongSuffix {
+        return LONG
+    }
+
+    // check double
+    if hasDot {
+        return DOUBLE
+    }
+    if hasExp {
+        return DOUBLE
+    }
+
+    // check byte
+    if n, err := strconv.Atoi(num); err == nil && n >= 0 && n <= 255 {
+        return BYTE
+    }
+
+    return INT
 }

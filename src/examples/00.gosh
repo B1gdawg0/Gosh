@@ -1,12 +1,34 @@
 import fmt;
 
-int a = 10;
-int b = 5;
-int c = (10 * (a + b * 10));
-string lovelygreettomydearfriend = "Kuy I here big";
-bool truesy = true;
+int ai = 42;
+int bi = 7;
+int ci = ai * 2 + bi;
 
-:: if (truesy){
-:: fmt.Println("result: ", c)
-:: fmt.Println(lovelygreettomydearfriend)
-::}
+byte smallb = 128;
+
+float xf = 9.81f;
+double yd = 2.7182818284;
+
+long bigboy = 9223372036854775807L;  // max int64
+
+string greetingMessage = "Hello, Go world!";
+bool isActive = false;
+
+:: fmt.Println("INT ai =", ai)
+:: fmt.Println("INT bi =", bi)
+:: fmt.Println("INT ci =", ci)
+
+:: fmt.Println("BYTE smallb =", smallb)
+
+:: fmt.Println("FLOAT xf =", xf)
+:: fmt.Println("DOUBLE yd =", yd)
+
+:: fmt.Println("LONG bigboy =", bigboy)
+
+:: fmt.Println(greetingMessage)
+
+:: if isActive {
+::     fmt.Println("Boolean is TRUE")
+:: } else {
+::     fmt.Println("Boolean is FALSE")
+:: }
