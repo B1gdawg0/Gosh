@@ -2,6 +2,11 @@ import fmt;
 
 int a = 10;
 int b = 5;
+int c = (10 * (a + b * 10));
+string lovelygreettomydearfriend = "Kuy I here big";
+bool truesy = true;
 
-:: var c int = 3
-:: fmt.Println(a+b+c)
+:: if (truesy){
+:: fmt.Println("result: ", c)
+:: fmt.Println(lovelygreettomydearfriend)
+::}

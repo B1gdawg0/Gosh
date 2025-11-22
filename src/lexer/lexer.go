@@ -37,12 +37,22 @@ func (lx *Lexer) Tokenize() Token {
 		tok = Token{Type: ASSIGN, Literal: string(lx.ch), Line: lx.line}
 	case ';':
 		tok = Token{Type: SEMI, Literal: string(lx.ch), Line: lx.line}
+	case '(':
+		tok = Token{Type: LPAREN, Literal: string(lx.ch), Line: lx.line}
+	case ')':
+		tok = Token{Type: RPAREN, Literal: string(lx.ch), Line: lx.line}
+	case '+':
+		tok = Token{Type: PLUS, Literal: string(lx.ch), Line: lx.line}
+	case '-':
+		tok = Token{Type: MINUS, Literal: string(lx.ch), Line: lx.line}
+	case '*':
+		tok = Token{Type: MULT, Literal: string(lx.ch), Line: lx.line}
+	case '/':
+		tok = Token{Type: DIV, Literal: string(lx.ch), Line: lx.line}
 	case '"':
-		if isLetter(lx.ch){
-			tok.Literal = lx.readContentInsideDoubleQuote()
-			tok.Type = STRING
-			return tok
-		}
+		tok.Literal = lx.readContentInsideDoubleQuote()
+		tok.Type = STRING
+		return tok
 	case ':':
 		if lx.checkRightChar() == ':' {
         lx.moveCursorToRight()
@@ -103,15 +113,17 @@ func (lx *Lexer) skipWhiteSpace() {
 }
 
 func (lx *Lexer) readContentInsideDoubleQuote() string{
-	first_i := lx.pos;
+	first_i := lx.pos+1;
 	if lx.ch != '"'{
 		fmt.Println("[Error] invalid string format at line: ", lx.line)
 		os.Exit(1)
 	}
-	for lx.ch != '"'&&(isLetter(lx.ch) || isDigit(lx.ch)){
-		lx.moveCursorToRight();
+	lx.moveCursorToRight()
+	for lx.ch != '"' && lx.ch != 0 {
+		lx.moveCursorToRight()
 	}
-	return lx.input[first_i:lx.pos]
+	lx.moveCursorToRight()
+	return lx.input[first_i:lx.pos-1]
 }
 
 func (lx *Lexer) readIdentifier() string{

@@ -5,6 +5,7 @@ type TokenType string;
 const (
 	TYPE_INT TokenType = "TYPE_INT"
 	TYPE_STRING TokenType = "TYPE_STRING"
+	TYPE_BOOLEAN TokenType = "TYPE_BOOLEAN"
 
 	INT TokenType = "INT"
 	IDENT TokenType = "IDENT"
@@ -40,6 +41,7 @@ var keywords = map[string]TokenType{
 	"int": TYPE_INT,
 	"import": IMPORT,
 	"string": TYPE_STRING,
+	"bool": TYPE_BOOLEAN,
 }
 
 func LookupIdent(ident string) TokenType {

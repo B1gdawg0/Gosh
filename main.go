@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	lx "github.com/B1gdawg0/Gosh/src/lexer"
+	"github.com/B1gdawg0/Gosh/src/parsing"
 )
 
 func main(){
@@ -60,50 +61,56 @@ func main(){
 	}
 }
 
-func transpile(in string) string{
-	lexer := lx.NewLexer(in)
-	var out strings.Builder
-	userImports := []string{}
+func transpile(in string) string {
+    lexer := lx.NewLexer(in)
+    var out strings.Builder
+    userImports := []string{}
 
-	tok := lexer.Tokenize()
-	if tok.Type == lx.IMPORT {
-		for {
-			tok = lexer.Tokenize()
+    tok := lexer.Tokenize()
+    if tok.Type == lx.IMPORT {
+        for {
+            tok = lexer.Tokenize()
+            if tok.Type == lx.SEMI || tok.Type == lx.EOF {
+                break
+            }
+            userImports = append(userImports, tok.Literal)
+        }
+    } else {
+        lexer.CheckPointThis(tok)
+    }
 
-			if tok.Type == lx.SEMI || tok.Type == lx.EOF {
-				break
-			}
-
-			userImports = append(userImports, tok.Literal)
-		}
-	} else {
-		lexer.CheckPointThis(tok)
-	}
-
-	out.WriteString("package main\n")
-	out.WriteString("import (\n")
-	for _, im := range userImports {
-		out.WriteString(fmt.Sprintf("\t\"%s\"\n", im))
-	}
-	out.WriteString(")\n")
+    out.WriteString("package main\n")
+    out.WriteString("import (\n")
+    for _, im := range userImports {
+        out.WriteString(fmt.Sprintf("\t\"%s\"\n", im))
+    }
+    out.WriteString(")\n")
     out.WriteString("func main() {\n")
-	for {
-		tok := lexer.Tokenize()
-		if tok.Type == lx.EOF{
-			break
-		}
 
-		switch tok.Type {
-			case lx.TYPE_INT:
-				left, right := lx.GetLeftRightFromDefined(lexer)
-				out.WriteString(fmt.Sprintf("\tvar %s int = %s\n", left.Literal, right.Literal)) 
-			case lx.TYPE_STRING:
-				left, right := lx.GetLeftRightFromDefined(lexer)
-				out.WriteString(fmt.Sprintf("\tvar %s string = \"%s\"\n", left.Literal, right.Literal)) 
-			case lx.NATIVE:
-				out.WriteString("\t" + strings.TrimSpace(tok.Literal) + "\n")
-		}
-	}
-	out.WriteString("}\n")
-	return out.String()
+    for {
+        tok := lexer.Tokenize()
+        if tok.Type == lx.EOF {
+            break
+        }
+	
+        switch tok.Type {
+        case lx.TYPE_INT, lx.TYPE_STRING, lx.TYPE_BOOLEAN:
+			leftTok, expr := parsing.GetVarAndExpr(lexer)
+			goRhs := parsing.TranspileExpr(expr)
+
+			switch tok.Type {
+				case lx.TYPE_INT:
+					out.WriteString(fmt.Sprintf("\tvar %s int = %s\n", leftTok.Literal, goRhs))
+				case lx.TYPE_STRING:
+					out.WriteString(fmt.Sprintf("\tvar %s string = %s\n", leftTok.Literal, goRhs))
+				case lx.TYPE_BOOLEAN:
+					out.WriteString(fmt.Sprintf("\tvar %s bool = %s\n", leftTok.Literal, goRhs))
+			}
+        case lx.NATIVE:
+            out.WriteString("\t" + strings.TrimSpace(tok.Literal) + "\n")
+        }
+    }
+
+    out.WriteString("}\n")
+    return out.String()
 }
