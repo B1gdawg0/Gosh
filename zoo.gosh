@@ -32,5 +32,7 @@ class Zoo{
 
 Section section01 = new Section("lion", "001");
 Section section02 = new Section("seal", "002");
-Zoo kasetsart = new Zoo("Dumb dumb", [section01, section02]);
+
+Section[] sections = [section01, section02];
+Zoo kasetsart = new Zoo("Dumb dumb", sections);
 kasetsart.announce();

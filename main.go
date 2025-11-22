@@ -319,12 +319,12 @@ func transpileWithPath(in string, basePath string) string {
 					panic(fmt.Sprintf("[Error] Expected '=' after variable at line %d", eq.Line))
 				}
 				expr := parsing.ParseExpr(lexer)
-				goRhs := parsing.TranspileExpr(expr)
+				typeStr := "[]*" + className
+				goRhs := parsing.TranspileExprWithType(expr, typeStr)
 				semi := lexer.Tokenize()
 				if semi.Type != lx.SEMI {
 					panic(fmt.Sprintf("[Error] Expected ';' after expression at line %d", semi.Line))
 				}
-				typeStr := "[]*" + className
 				out.WriteString(fmt.Sprintf("\tvar %s %s = %s\n", varName.Literal, typeStr, goRhs))
 			} else if next.Type == lx.IDENT {
 				className := tok.Literal
