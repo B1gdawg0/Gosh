@@ -1,5 +1,46 @@
 native_import fmt;
 
-int c = 10;
+class Zoo{
+    string Name;
+    Section[] Sections;
 
-fmt.Println("result: ", c)
+    void Zoo(string Name, Section[] Sections){
+        this.Name = Name;
+        this.Sections = Sections;
+    }
+
+    void Announce(){
+::         for _, sec := range this.Sections {
+             fmt.Println("we have: ", sec.animal, " age: ",sec.section_id);
+::         }
+    }
+}
+
+class Section{
+    string animal;
+    string section_id;
+
+    void Section(string animal, string section_id){
+        this.animal = animal;
+        this.section_id = section_id;
+    }
+}
+
+Section sec01 = new Section("lion", "001");
+Section sec02 = new Section("seal", "002");
+Section sec03 = nil;
+
+if(sec01.animal == "lion" && sec02.animal == "seal"){
+	fmt.Println(sec01.animal, " want to eat that fat ", sec02.animal, " at ", sec02.section_id);
+}
+
+if(sec03 == null){
+	fmt.Println("this section is empty");
+}
+
+Zoo Kasetsart = new Zoo(
+    "Dumb dumb",
+    [sec01, sec02]
+);
+
+Kasetsart.Announce();
