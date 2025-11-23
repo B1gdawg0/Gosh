@@ -205,7 +205,7 @@ func transpileWithPath(in string, basePath string) string {
 		importLexer := lx.NewLexer(string(importBytes))
 		for {
 			importTok := importLexer.Tokenize()
-			if importTok.Type == lx.IMPORT {
+			if importTok.Type == lx.IMPORT || importTok.Type == lx.NATIVE_IMPORT {
 				for {
 					importTok = importLexer.Tokenize()
 					if importTok.Type == lx.SEMI || importTok.Type == lx.EOF {
@@ -346,7 +346,7 @@ func transpileWithPath(in string, basePath string) string {
 				var typeStr string
 				if _, isNewExpr := expr.(*parsing.NewExpr); isNewExpr {
 					typeStr = "*" + className
-				} else if strings.HasPrefix(goRhs, "&") || goRhs == "nil"{
+				} else if strings.HasPrefix(goRhs, "&") || goRhs == "nil" {
 					typeStr = "*" + className
 				} else {
 					typeStr = className

@@ -76,7 +76,8 @@ func ParseClass(lexer *lx.Lexer) *ClassDecl {
 			panic(fmt.Sprintf("[Error] Unexpected EOF in class declaration at line %d", tok.Line))
 		}
 
-		if tok.Type == lx.TYPE_INT || tok.Type == lx.TYPE_STRING || tok.Type == lx.TYPE_BOOLEAN {
+		if tok.Type == lx.TYPE_INT || tok.Type == lx.TYPE_STRING || tok.Type == lx.TYPE_BOOLEAN ||
+			tok.Type == lx.TYPE_FLOAT || tok.Type == lx.TYPE_DOUBLE || tok.Type == lx.TYPE_LONG || tok.Type == lx.TYPE_BYTE {
 			nameTok := lexer.Tokenize()
 			if nameTok.Type != lx.IDENT {
 				panic(fmt.Sprintf("[Error] Expected identifier after type at line %d", nameTok.Line))
@@ -269,7 +270,8 @@ func ParseMethodWithTokens(lexer *lx.Lexer, returnType lx.TokenType, nameTok lx.
 			panic(fmt.Sprintf("[Error] Unexpected EOF in method parameters at line %d", tok.Line))
 		}
 
-		if tok.Type == lx.TYPE_INT || tok.Type == lx.TYPE_STRING || tok.Type == lx.TYPE_BOOLEAN {
+		if tok.Type == lx.TYPE_INT || tok.Type == lx.TYPE_STRING || tok.Type == lx.TYPE_BOOLEAN ||
+			tok.Type == lx.TYPE_FLOAT || tok.Type == lx.TYPE_DOUBLE || tok.Type == lx.TYPE_LONG || tok.Type == lx.TYPE_BYTE {
 			paramName := lexer.Tokenize()
 			if paramName.Type != lx.IDENT {
 				panic(fmt.Sprintf("[Error] Expected parameter name at line %d", paramName.Line))
@@ -497,6 +499,14 @@ func tokenTypeToGoType(t lx.TokenType) string {
 		return "string"
 	case lx.TYPE_BOOLEAN:
 		return "bool"
+	case lx.TYPE_FLOAT:
+		return "float32"
+	case lx.TYPE_DOUBLE:
+		return "float64"
+	case lx.TYPE_LONG:
+		return "int64"
+	case lx.TYPE_BYTE:
+		return "byte"
 	default:
 		return "interface{}"
 	}
@@ -510,7 +520,7 @@ func TranspileMethodStatement(lexer *lx.Lexer) string {
 	}
 
 	switch tok.Type {
-	case lx.TYPE_INT, lx.TYPE_STRING, lx.TYPE_BOOLEAN:
+	case lx.TYPE_INT, lx.TYPE_STRING, lx.TYPE_BOOLEAN, lx.TYPE_FLOAT, lx.TYPE_DOUBLE, lx.TYPE_LONG, lx.TYPE_BYTE:
 		leftTok, expr := GetVarAndExpr(lexer)
 		goRhs := TranspileExpr(expr)
 
@@ -521,8 +531,26 @@ func TranspileMethodStatement(lexer *lx.Lexer) string {
 			return fmt.Sprintf("var %s string = %s", leftTok.Literal, goRhs)
 		case lx.TYPE_BOOLEAN:
 			return fmt.Sprintf("var %s bool = %s", leftTok.Literal, goRhs)
+		case lx.TYPE_FLOAT:
+			return fmt.Sprintf("var %s float32 = %s", leftTok.Literal, goRhs)
+		case lx.TYPE_DOUBLE:
+			return fmt.Sprintf("var %s float64 = %s", leftTok.Literal, goRhs)
+		case lx.TYPE_LONG:
+			return fmt.Sprintf("var %s int64 = %s", leftTok.Literal, goRhs)
+		case lx.TYPE_BYTE:
+			return fmt.Sprintf("var %s byte = %s", leftTok.Literal, goRhs)
 		}
 	case lx.IDENT:
+		// Check if this is a return statement
+		if tok.Literal == "return" {
+			expr := ParseExpr(lexer)
+			semi := lexer.Tokenize()
+			if semi.Type != lx.SEMI {
+				panic(fmt.Sprintf("[Error] Expected ';' after return statement at line %d", semi.Line))
+			}
+			return fmt.Sprintf("return %s", TranspileExpr(expr))
+		}
+
 		next := lexer.Tokenize()
 
 		if next.Type == lx.IDENT {
@@ -541,7 +569,7 @@ func TranspileMethodStatement(lexer *lx.Lexer) string {
 			var typeStr string
 			if _, isNewExpr := expr.(*NewExpr); isNewExpr {
 				typeStr = "*" + className
-			} else if strings.HasPrefix(goRhs, "&") || goRhs == "nil"{
+			} else if strings.HasPrefix(goRhs, "&") || goRhs == "nil" {
 				typeStr = "*" + className
 			} else {
 				typeStr = className
