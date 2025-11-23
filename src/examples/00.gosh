@@ -1,5 +1,7 @@
 native_import fmt;
 
+// hello world this is the first comment in Gosh
+
 class Zoo{
     string Name;
     Section[] Sections;

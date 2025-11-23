@@ -33,6 +33,11 @@ func (lx *Lexer) Tokenize() Token {
 	lx.SkipWhiteSpace()
 	tok.Line = lx.line
 
+	for lx.ch == '/' && lx.checkRightChar() == '/' {
+		lx.skipComment()
+		lx.SkipWhiteSpace()
+	}
+
 	switch lx.ch {
 		case '=':
 		if lx.checkRightChar() == '=' {
@@ -158,6 +163,20 @@ func (lx *Lexer) checkRightChar() byte {
 		return 0
 	}
 	return lx.input[lx.readPos]
+}
+
+func (lx *Lexer) skipComment() {
+	lx.moveCursorToRight()
+	lx.moveCursorToRight()
+
+	for lx.ch != '\n' && lx.ch != 0 {
+		lx.moveCursorToRight()
+	}
+
+	if lx.ch == '\n' {
+		lx.moveCursorToRight()
+		lx.line++
+	}
 }
 
 func (lx *Lexer) PeekToken() Token {

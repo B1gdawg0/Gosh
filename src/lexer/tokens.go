@@ -62,6 +62,8 @@ const (
 	NATIVE        TokenType = "NATIVE"
 	IMPORT        TokenType = "IMPORT"
 	NATIVE_IMPORT TokenType = "NATIVE_IMPORT"
+
+	COMMENT       TokenType = "COMMENT"
 )
 
 type Token struct {
@@ -87,6 +89,7 @@ var keywords = map[string]TokenType{
 	"if":			 IF,
 	"else if":       ELSEIF,
 	"else":          ELSE,
+	"//":			 COMMENT,
 }
 
 var replaceWords = map[string]string{
