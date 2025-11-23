@@ -1,6 +1,9 @@
-Primary Type: string, bool, float, double, long, bigint, byte, bit
-Array
-Class
+✓ Primary Type: string, bool, float, double, long, bigint, byte, bit
+✓ Array
+✓ Class
+✓ If-else condition
+••• For loop (3 types)
+dynimic type
 Interface
 Abstract
 Try-catch
