@@ -84,6 +84,17 @@ func ParseClass(lexer *lx.Lexer) *ClassDecl {
 		if tok.Type == lx.TYPE_INT || tok.Type == lx.TYPE_STRING || tok.Type == lx.TYPE_BOOLEAN ||
 			tok.Type == lx.TYPE_FLOAT || tok.Type == lx.TYPE_DOUBLE || tok.Type == lx.TYPE_LONG || tok.Type == lx.TYPE_BYTE {
 			nameTok := lexer.Tokenize()
+			isArray := false
+
+			if nameTok.Type == lx.LBRACKET {
+				bracketClose := lexer.Tokenize()
+				if bracketClose.Type != lx.RBRACKET {
+					panic(fmt.Sprintf("[Error] Expected ']' after '[' at line %d", bracketClose.Line))
+				}
+				isArray = true
+				nameTok = lexer.Tokenize()
+			}
+
 			if nameTok.Type != lx.IDENT {
 				panic(fmt.Sprintf("[Error] Expected identifier after type at line %d", nameTok.Line))
 			}
@@ -97,6 +108,9 @@ func ParseClass(lexer *lx.Lexer) *ClassDecl {
 				field := &Field{
 					Name: nameTok.Literal,
 					Type: tok.Type,
+				}
+				if isArray {
+					field.TypeName = "[]" + tokenTypeToGoType(tok.Type)
 				}
 				if peek.Type != lx.SEMI {
 					panic(fmt.Sprintf("[Error] Expected ';' after field declaration at line %d", peek.Line))
@@ -277,14 +291,30 @@ func ParseMethodWithTokens(lexer *lx.Lexer, returnType lx.TokenType, nameTok lx.
 
 		if tok.Type == lx.TYPE_INT || tok.Type == lx.TYPE_STRING || tok.Type == lx.TYPE_BOOLEAN ||
 			tok.Type == lx.TYPE_FLOAT || tok.Type == lx.TYPE_DOUBLE || tok.Type == lx.TYPE_LONG || tok.Type == lx.TYPE_BYTE {
-			paramName := lexer.Tokenize()
-			if paramName.Type != lx.IDENT {
-				panic(fmt.Sprintf("[Error] Expected parameter name at line %d", paramName.Line))
+			paramTok := lexer.Tokenize()
+			isArray := false
+
+			if paramTok.Type == lx.LBRACKET {
+				bracketClose := lexer.Tokenize()
+				if bracketClose.Type != lx.RBRACKET {
+					panic(fmt.Sprintf("[Error] Expected ']' after '[' at line %d", bracketClose.Line))
+				}
+				isArray = true
+				paramTok = lexer.Tokenize()
 			}
-			method.Params = append(method.Params, Param{
-				Name: paramName.Literal,
+
+			if paramTok.Type != lx.IDENT {
+				panic(fmt.Sprintf("[Error] Expected parameter name at line %d", paramTok.Line))
+			}
+
+			param := Param{
+				Name: paramTok.Literal,
 				Type: tok.Type,
-			})
+			}
+			if isArray {
+				param.TypeName = "[]" + tokenTypeToGoType(tok.Type)
+			}
+			method.Params = append(method.Params, param)
 
 			next := lexer.Tokenize()
 			if next.Type == lx.COMMA {
@@ -420,16 +450,16 @@ func TranspileClass(class *ClassDecl) string {
 	result += fmt.Sprintf("type %s struct {\n", class.Name)
 	for _, field := range class.Fields {
 		var goType string
-		if field.Type == lx.IDENT && field.TypeName != "" {
+		if field.TypeName != "" {
 			if strings.HasPrefix(field.TypeName, "[]") {
 				baseType := strings.TrimPrefix(field.TypeName, "[]")
-				if strings.Contains(baseType, ".") {
+				if isPrimitiveTypeName(baseType) || strings.HasPrefix(baseType, "*") || strings.Contains(baseType, ".") {
 					goType = "[]" + baseType
 				} else {
 					goType = "[]*" + baseType
 				}
 			} else {
-				if strings.Contains(field.TypeName, ".") {
+				if isPrimitiveTypeName(field.TypeName) || strings.HasPrefix(field.TypeName, "*") || strings.Contains(field.TypeName, ".") {
 					goType = field.TypeName
 				} else {
 					goType = "*" + field.TypeName
@@ -458,16 +488,16 @@ func TranspileMethod(className string, method *Method) string {
 			result += ", "
 		}
 		var goType string
-		if param.Type == lx.IDENT && param.TypeName != "" {
+		if param.TypeName != "" {
 			if strings.HasPrefix(param.TypeName, "[]") {
 				baseType := strings.TrimPrefix(param.TypeName, "[]")
-				if strings.Contains(baseType, ".") {
+				if isPrimitiveTypeName(baseType) || strings.HasPrefix(baseType, "*") || strings.Contains(baseType, ".") {
 					goType = "[]" + baseType
 				} else {
 					goType = "[]*" + baseType
 				}
 			} else {
-				if strings.Contains(param.TypeName, ".") {
+				if isPrimitiveTypeName(param.TypeName) || strings.HasPrefix(param.TypeName, "*") || strings.Contains(param.TypeName, ".") {
 					goType = param.TypeName
 				} else {
 					goType = "*" + param.TypeName
@@ -517,6 +547,15 @@ func tokenTypeToGoType(t lx.TokenType) string {
 	}
 }
 
+func isPrimitiveTypeName(name string) bool {
+	switch name {
+	case "int", "string", "bool", "float32", "float64", "int64", "byte", "interface{}":
+		return true
+	default:
+		return false
+	}
+}
+
 func TranspileMethodStatement(lexer *lx.Lexer) string {
 	tok := lexer.Tokenize()
 	if tok.Type == lx.EOF || tok.Type == lx.RBRACE || tok.Type == lx.LBRACE {
@@ -526,7 +565,15 @@ func TranspileMethodStatement(lexer *lx.Lexer) string {
 
 	switch tok.Type {
 	case lx.TYPE_INT, lx.TYPE_STRING, lx.TYPE_BOOLEAN, lx.TYPE_FLOAT, lx.TYPE_DOUBLE, lx.TYPE_LONG, lx.TYPE_BYTE:
-		leftTok, expr := GetVarAndExpr(lexer)
+		leftTok, isArray, expr := GetVarAndExpr(lexer)
+
+		if isArray {
+			baseType := tokenTypeToGoType(tok.Type)
+			sliceType := "[]" + baseType
+			goRhs := TranspileExprWithType(expr, sliceType)
+			return fmt.Sprintf("var %s %s = %s", leftTok.Literal, sliceType, goRhs)
+		}
+
 		goRhs := TranspileExpr(expr)
 
 		switch tok.Type {
