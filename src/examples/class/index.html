@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages - Secure Anonymous Board</title>
+    <script>
+        function updateMessages() {
+            fetch('/messages')
+                .then(response => response.text())
+                .then(data => {
+                    const lines = data.split('\n');
+                    const messagesList = document.getElementById('messages');
+                    messagesList.innerHTML = '';
+                    
+                    lines.forEach(line => {
+                        if (line.startsWith('- ') && line.trim() !== '-') {
+                            const li = document.createElement('li');
+                            const font = document.createElement('font');
+                            font.color = '#000000';
+                            font.textContent = line.substring(2);
+                            li.appendChild(font);
+                            messagesList.appendChild(li);
+                        }
+                    });
+                    
+                    document.getElementById('timestamp').textContent = new Date().toLocaleString();
+                })
+                .catch(error => {
+                    console.error('Error fetching messages:', error);
+                });
+        }
+        
+        setInterval(updateMessages, 5000);
+        
+        window.onload = updateMessages;
+    </script>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#000000" vlink="#000000" alink="#666666">
+    <pre>
+================================================================================
+                    SECURE ANONYMOUS MESSAGE BOARD
+                         [TOR HIDDEN SERVICE]
+================================================================================
+
+WARNING: This service is provided as-is. Do not share personal information.
+         All connections are logged for security purposes.
+
+================================================================================
+</pre>
+
+    <h1><font color="#000000">*** MESSAGES ***</font></h1>
+    
+    <hr>
+    
+    <h2><font color="#000000">Active Messages:</font></h2>
+    
+    <ul id='messages'>
+        <li><font color="#000000">[LOADING...]</font></li>
+    </ul>
+    
+    <hr>
+    
+    <pre>
+--------------------------------------------------------------------------------
+Last Updated: <span id="timestamp">[TIMESTAMP UNAVAILABLE - JS DISABLED]</span>
+Connection: ENCRYPTED | Status: ACTIVE | Node: HIDDEN
+--------------------------------------------------------------------------------
+    </pre>
+    
+    <p>
+        <font color="#000000"><b>NOTICE:</b></font> 
+        <font color="#000000">JavaScript enabled for automatic message updates.
+        Messages refresh every 5 seconds.</font>
+    </p>
+    
+    <hr>
+    
+    <center>
+        <font size="1" color="#666666">
+        .onion service | No logs | No tracking | Anonymous
+        </font>
+    </center>
+
+</body>
+
+</html>
