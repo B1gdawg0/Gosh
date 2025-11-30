@@ -67,7 +67,7 @@ class WebServer {
 	}
 }
 
-WebServer server = new WebServer(8080);
+WebServer server = new WebServer(20000);
 server.pushMessage("Hello, World!");
 server.pushMessage("Welcome to GoSharp!");
 server.start();
