@@ -1,0 +1,73 @@
+native_import net/http;
+native_import fmt;
+native_import io;
+native_import os;
+native_import encoding/json;
+
+class Message {
+	string content;
+
+	void Message(string content) {
+		this.content = content;
+	}
+}
+
+class WebServer {
+	http.Server server;
+	Message[] messages;
+
+	void WebServer(int port) {
+		:: this.server = http.Server{
+		:: 	Addr: fmt.Sprintf(":%d", port),
+		:: }
+		this.messages = [];
+	}
+
+	void pushMessage(string content) {
+		this.messages.push(new Message(content));
+	}
+
+	Message[] getMessages() {
+		return this.messages;
+	}
+
+	void registerRoute(string path, http.HandlerFunc handler) {
+		:: http.HandleFunc(path, handler);
+	}
+
+	string getMessagesHTML() {
+		:: data, _ := os.ReadFile("src/examples/class/index.html");
+		:: return string(data);
+	}
+
+	void start() {
+		this.registerRoute("/", func(w http.ResponseWriter, r *http.Request) {
+			:: fmt.Fprintf(w, "Welcome to GoSharp WebServer!\n");
+		});
+		
+		:: http.HandleFunc("/messages", func(w http.ResponseWriter, r *http.Request) {
+		::  body, _ := io.ReadAll(r.Body)
+		::	var msg struct {
+		::		Content string `json:"content"`
+		::	}
+		::	json.Unmarshal(body, &msg)
+		:: 	this.pushMessage(msg.Content);
+		:: 	fmt.Fprintf(w, "Messages:\n");
+		:: 	for _, msg := range this.messages {
+		:: 		fmt.Fprintf(w, "- %s\n", msg.content);
+		:: 	}
+		:: });
+
+		this.registerRoute("/index.html", func(w http.ResponseWriter, r *http.Request) {
+			:: fmt.Fprintf(w, this.getMessagesHTML());
+		});
+
+		Println("Server starting on", this.server.Addr);
+		:: http.ListenAndServe(this.server.Addr, nil);
+	}
+}
+
+WebServer server = new WebServer(8080);
+server.pushMessage("Hello, World!");
+server.pushMessage("Welcome to GoSharp!");
+server.start();
